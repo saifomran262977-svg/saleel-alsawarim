@@ -1,0 +1,475 @@
+---
+// ============================================================
+// صليل الصوارم — كرت المنشور
+// ============================================================
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+  featured?: boolean;
+  showImage?: boolean;
+  compact?: boolean;
+}
+
+const {
+  post,
+  featured = false,
+  showImage = true,
+  compact = false,
+} = Astro.props;
+
+const { data, slug } = post;
+
+// ---------- خرائط التصنيفات ----------
+const categoryLabels: Record<string, string> = {
+  durus: 'دروس',
+  maqalat: 'مقالات',
+  fatawa: 'فتاوى',
+  athar: 'أثر ودليل',
+  tazkiya: 'تزكية',
+  manhaj: 'منهج',
+  misc: 'متفرقات',
+};
+
+const categoryLabel = categoryLabels[data.category] || data.category;
+
+// ---------- تنسيق التاريخ ----------
+const pubDate = new Date(data.pubDate);
+const dateFormatted = new Intl.DateTimeFormat('ar-EG', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+}).format(pubDate);
+
+// ---------- وقت القراءة (تقديري) ----------
+const readingTime = data.readingTime || Math.max(1, Math.ceil((data.description?.length || 0) / 200));
+
+// ---------- الرابط ----------
+const postUrl = `/posts/${slug}/`;
+
+// ---------- الحصول على رابط الصورة ----------
+const imageSrc = data.image?.src;
+const imageAlt = data.image?.alt || data.title;
+---
+
+<article
+  class:list={[
+    'post-card',
+    featured && 'post-card-featured',
+    compact && 'post-card-compact',
+  ]}
+  itemscope
+  itemtype="https://schema.org/BlogPosting"
+>
+  <!-- الصورة -->
+  {showImage && imageSrc && (
+    <a href={postUrl} class="post-card-image" aria-label={data.title}>
+      <Image
+        src={imageSrc}
+        alt={imageAlt}
+        width={800}
+        height={450}
+        loading="lazy"
+        decoding="async"
+      />
+    </a>
+  )}
+
+  <!-- المحتوى -->
+  <div class="post-card-body">
+
+    <!-- الشريط العلوي: التصنيف + السلسلة -->
+    <div class="post-card-meta-top">
+      <a href={`/category/${data.category}/`} class="category-badge">
+        {categoryLabel}
+      </a>
+      {data.series && (
+        <span class="series-badge" title="من سلسلة">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          سلسلة
+        </span>
+      )}
+    </div>
+
+    <!-- العنوان -->
+    <h3 class="post-card-title" itemprop="headline">
+      <a href={postUrl}>{data.title}</a>
+    </h3>
+
+    <!-- الوصف -->
+    <p class="post-card-description" itemprop="description">
+      {data.description}
+    </p>
+
+    <!-- الكلمات المفتاحية -->
+    {data.tags && data.tags.length > 0 && !compact && (
+      <div class="post-card-tags">
+        {data.tags.slice(0, 3).map((tag) => (
+          <a href={`/search?q=${encodeURIComponent(tag)}`} class="tag-chip">
+            #{tag}
+          </a>
+        ))}
+      </div>
+    )}
+
+    <!-- التذييل: المعلومات -->
+    <div class="post-card-footer">
+
+      <div class="post-card-info">
+        <!-- التاريخ -->
+        <time
+          datetime={pubDate.toISOString()}
+          itemprop="datePublished"
+          class="info-item"
+          title={dateFormatted}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          {dateFormatted}
+        </time>
+
+        <!-- وقت القراءة -->
+        <span class="info-item" title="وقت القراءة التقريبي">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          {readingTime} د
+        </span>
+      </div>
+
+      <!-- زر اقرأ المزيد -->
+      <a href={postUrl} class="read-more" aria-label={`اقرأ: ${data.title}`}>
+        اقرأ
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </a>
+
+    </div>
+  </div>
+</article>
+
+<style>
+  /* ---------- الكرت الأساسي ---------- */
+  .post-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: border-color var(--t-base), box-shadow var(--t-base);
+    height: 100%;
+    position: relative;
+  }
+
+  .post-card:hover {
+    border-color: var(--border-gold);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* شريط ذهبي جانبي يظهر عند المرور */
+  .post-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    height: 0;
+    background: var(--color-gold-dark);
+    transition: height var(--t-base);
+    z-index: 1;
+  }
+
+  .post-card:hover::before {
+    height: 100%;
+  }
+
+  /* ---------- الصورة ---------- */
+  .post-card-image {
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .post-card-image :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .post-card:hover .post-card-image :global(img) {
+    transform: scale(1.03);
+  }
+
+  /* ---------- المحتوى ---------- */
+  .post-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem 1.35rem 1.15rem;
+    flex: 1;
+  }
+
+  /* ---------- الشريط العلوي ---------- */
+  .post-card-meta-top {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .category-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    background: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    transition: all var(--t-fast);
+  }
+
+  .category-badge:hover {
+    background: var(--color-primary);
+    color: var(--bg-elevated);
+  }
+
+  .series-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-gold-dark);
+    background: rgba(139, 105, 20, 0.08);
+    border: 1px solid rgba(139, 105, 20, 0.3);
+    border-radius: var(--radius-sm);
+  }
+
+  /* ---------- العنوان ---------- */
+  .post-card-title {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    line-height: 1.45;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .post-card-title a {
+    color: inherit;
+    transition: color var(--t-fast);
+  }
+
+  .post-card-title a:hover {
+    color: var(--color-primary);
+  }
+
+  /* ---------- الوصف ---------- */
+  .post-card-description {
+    font-size: 0.92rem;
+    color: var(--text-soft);
+    line-height: 1.75;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ---------- الوسوم ---------- */
+  .post-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.15rem;
+  }
+
+  .tag-chip {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-soft);
+    transition: all var(--t-fast);
+  }
+
+  .tag-chip:hover {
+    color: var(--color-primary);
+    background: var(--bg-deep);
+  }
+
+  /* ---------- التذييل ---------- */
+  .post-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .post-card-info {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    min-width: 0;
+  }
+
+  .info-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .info-item svg {
+    flex-shrink: 0;
+    opacity: 0.8;
+  }
+
+  .read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    transition: all var(--t-base);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .read-more:hover {
+    background: var(--color-primary);
+    color: var(--bg-elevated);
+    gap: 0.5rem;
+  }
+
+  .read-more svg {
+    transition: transform var(--t-base);
+  }
+
+  [dir="rtl"] .read-more:hover svg {
+    transform: translateX(-3px);
+  }
+  [dir="ltr"] .read-more:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* ---------- النسخة المميزة (featured) ---------- */
+  .post-card-featured {
+    grid-column: 1 / -1;
+  }
+
+  .post-card-featured .post-card-body {
+    padding: 1.75rem 2rem;
+  }
+
+  .post-card-featured .post-card-title {
+    font-size: 1.65rem;
+  }
+
+  .post-card-featured .post-card-description {
+    font-size: 1rem;
+    -webkit-line-clamp: 4;
+  }
+
+  @media (min-width: 860px) {
+    .post-card-featured {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+    }
+
+    .post-card-featured .post-card-image {
+      aspect-ratio: auto;
+      height: 100%;
+      border-bottom: none;
+      border-inline-end: 1px solid var(--border);
+    }
+
+    .post-card-featured .post-card-body {
+      justify-content: center;
+    }
+  }
+
+  /* ---------- النسخة المضغوطة ---------- */
+  .post-card-compact .post-card-body {
+    padding: 1rem 1.1rem;
+    gap: 0.55rem;
+  }
+
+  .post-card-compact .post-card-title {
+    font-size: 1.05rem;
+  }
+
+  .post-card-compact .post-card-description {
+    -webkit-line-clamp: 2;
+    font-size: 0.87rem;
+  }
+
+  .post-card-compact .post-card-footer {
+    padding-top: 0.7rem;
+  }
+
+  /* ---------- التجاوب ---------- */
+  @media (max-width: 640px) {
+    .post-card-body {
+      padding: 1.1rem 1.15rem 1rem;
+    }
+
+    .post-card-title {
+      font-size: 1.15rem;
+    }
+
+    .post-card-description {
+      font-size: 0.88rem;
+      -webkit-line-clamp: 2;
+    }
+
+    .post-card-info {
+      gap: 0.65rem;
+      font-size: 0.74rem;
+    }
+
+    .post-card-featured .post-card-body {
+      padding: 1.25rem 1.35rem;
+    }
+
+    .post-card-featured .post-card-title {
+      font-size: 1.35rem;
+    }
+  }
+</style>
