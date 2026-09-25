@@ -1,0 +1,170 @@
+---
+// ============================================================
+// صليل الصوارم — القالب الأساسي لكل الصفحات
+// ============================================================
+import '@/styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  lang?: 'ar' | 'en';
+  noIndex?: boolean;
+}
+
+const {
+  title = 'صليل الصوارم',
+  description = 'موقع إسلامي دعوي على منهج أهل السنة والجماعة — بالأثر والدليل من الكتاب والسنة',
+  image = '/og-default.jpg',
+  lang = 'ar',
+  noIndex = false,
+} = Astro.props;
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://saleel-alsawarim.pages.dev';
+const currentUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const fullTitle = title === 'صليل الصوارم' ? title : `${title} | صليل الصوارم`;
+
+const dir = lang === 'ar' ? 'rtl' : 'ltr';
+const ogLocale = lang === 'ar' ? 'ar_SA' : 'en_US';
+const altLocale = lang === 'ar' ? 'en_US' : 'ar_SA';
+---
+
+<!DOCTYPE html>
+<html lang={lang} dir={dir} data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e7c4a" />
+
+  <!-- العنوان والوصف -->
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={currentUrl} />
+
+  <!-- منع الفهرسة إن طُلب -->
+  {noIndex && <meta name="robots" content="noindex, nofollow" />}
+
+  <!-- Open Graph (مشاركة على فيسبوك وتويتر) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="صليل الصوارم" />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={currentUrl} />
+  <meta property="og:image" content={new URL(image, siteUrl).toString()} />
+  <meta property="og:locale" content={ogLocale} />
+  <meta property="og:locale:alternate" content={altLocale} />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={fullTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={new URL(image, siteUrl).toString()} />
+
+  <!-- الأيقونات -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <!-- Sitemap -->
+  <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="صليل الصوارم" href="/rss.xml" />
+
+  <!-- سكربت الوضع الليلي (يعمل قبل رسم الصفحة لمنع الوميض) -->
+  <script is:inline>
+    (function () {
+      try {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored || (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+
+<body>
+  <!-- شريط الزخرفة العلوي -->
+  <div class="ornament-top"></div>
+
+  <!-- الرأس -->
+  <slot name="header" />
+
+  <!-- المحتوى الرئيسي -->
+  <main id="main-content">
+    <slot />
+  </main>
+
+  <!-- التذييل -->
+  <slot name="footer" />
+
+  <!-- زر العودة للأعلى -->
+  <button
+    id="back-to-top"
+    class="back-to-top no-print"
+    aria-label="العودة للأعلى"
+    hidden
+  >
+    ▲
+  </button>
+
+  <!-- زر تبديل الوضع الليلي -->
+  <script is:inline>
+    // تبديل الوضع الليلي/النهاري
+    window.toggleTheme = function () {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (e) {}
+    };
+  </script>
+
+  <!-- زر العودة للأعلى (منطق) -->
+  <script>
+    const btn = document.getElementById('back-to-top');
+    if (btn) {
+      const onScroll = () => {
+        btn.hidden = window.scrollY < 400;
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      btn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      onScroll();
+    }
+  </script>
+
+  <style>
+    #main-content {
+      min-height: calc(100vh - 200px);
+    }
+
+    .back-to-top {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 1.5rem;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 1.2rem;
+      box-shadow: var(--shadow-lg);
+      transition: all var(--t-base);
+      z-index: 100;
+    }
+
+    .back-to-top:hover {
+      background: var(--color-primary-dark);
+      transform: translateY(-3px);
+    }
+
+    [dir="ltr"] .back-to-top {
+      left: auto;
+      right: 1.5rem;
+    }
+  </style>
+</body>
+</html>
