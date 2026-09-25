@@ -1,0 +1,359 @@
+---
+// ============================================================
+// صليل الصوارم — التذييل (طابع كلاسيكي رصين)
+// ============================================================
+const currentYear = new Date().getFullYear();
+
+const quickLinks = [
+  { label: 'الرئيسية', href: '/' },
+  { label: 'دروس', href: '/category/durus' },
+  { label: 'مقالات', href: '/category/maqalat' },
+  { label: 'سلاسل', href: '/series' },
+  { label: 'فتاوى', href: '/category/fatawa' },
+  { label: 'أثر ودليل', href: '/category/athar' },
+];
+
+const infoLinks = [
+  { label: 'عن الموقع', href: '/about' },
+  { label: 'منهجنا', href: '/manhaj' },
+  { label: 'سياسة الخصوصية', href: '/privacy' },
+  { label: 'شروط الاستخدام', href: '/terms' },
+  { label: 'اتصل بنا', href: '/contact' },
+];
+
+const contact = {
+  zangiNumber: '9316646158',
+  zangiLink: 'https://services.zangi.com/dl/conversation/9316646158',
+};
+---
+
+<footer class="site-footer no-print">
+  <div class="footer-ornament" aria-hidden="true">
+    <span></span>
+    <svg width="26" height="26" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2">
+      <rect x="8" y="8" width="24" height="24" transform="rotate(45 20 20)"/>
+      <rect x="8" y="8" width="24" height="24"/>
+      <circle cx="20" cy="20" r="2.4" fill="currentColor" stroke="none"/>
+    </svg>
+    <span></span>
+  </div>
+
+  <div class="container">
+    <div class="footer-grid">
+
+      <!-- العمود الأول: نبذة -->
+      <div class="footer-col footer-about">
+        <h3 class="footer-heading">صليل الصوارم</h3>
+        <p class="footer-text">
+          موقع إسلامي دعوي قائم على الكتاب والسنة، وعلى فهم سلف الأمة الصالح،
+          يُعنى بنشر العلم النافع، والأثر الصحيح، والدليل الواضح — بعيدًا عن
+          التعصب والتحريف.
+        </p>
+        <p class="footer-verse">
+          ﴿ وَقُلْ رَبِّ زِدْنِي عِلْمًا ﴾
+          <span class="verse-ref">— طه: ١١٤</span>
+        </p>
+      </div>
+
+      <!-- العمود الثاني: الأقسام -->
+      <div class="footer-col">
+        <h3 class="footer-heading">أبواب الموقع</h3>
+        <ul class="footer-links">
+          {quickLinks.map((l) => (
+            <li><a href={l.href}>{l.label}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- العمود الثالث: معلومات -->
+      <div class="footer-col">
+        <h3 class="footer-heading">روابط</h3>
+        <ul class="footer-links">
+          {infoLinks.map((l) => (
+            <li><a href={l.href}>{l.label}</a></li>
+          ))}
+          <li><a href="/rss.xml">خلاصة RSS</a></li>
+        </ul>
+      </div>
+
+      <!-- العمود الرابع: التواصل -->
+      <div class="footer-col">
+        <h3 class="footer-heading">للتواصل</h3>
+        <p class="footer-text footer-contact-note">
+          للتواصل مع القائمين على الموقع، عبر تطبيق زنجي:
+        </p>
+
+        <a
+          class="zangi-btn"
+          href={contact.zangiLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="فتح محادثة زنجي"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          <span>
+            <strong>محادثة زنجي</strong>
+            <small>{contact.zangiNumber}</small>
+          </span>
+        </a>
+
+        <p class="footer-note">
+          أو انسخ الرقم وأضفه في تطبيق زنجي مباشرة.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- الآية الختامية -->
+    <div class="footer-quran">
+      <p>
+        ﴿ يَا أَيُّهَا الَّذِينَ آمَنُوا اتَّقُوا اللَّهَ وَقُولُوا قَوْلًا سَدِيدًا ﴾
+      </p>
+      <span class="quran-ref">— الأحزاب: ٧٠</span>
+    </div>
+
+    <!-- سطر الحقوق -->
+    <div class="footer-bottom">
+      <p>
+        © {currentYear} — <strong>صليل الصوارم</strong>. جميع الحقوق محفوظة.
+        <br class="hide-sm" />
+        <span class="footer-desc">
+          المحتوى منشور للاستفادة، ويجوز نقله مع الإشارة إلى المصدر.
+        </span>
+      </p>
+      <p class="footer-tag">
+        <span>بالكتاب والسنة</span>
+        <span class="dot">·</span>
+        <span>على منهج السلف</span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  /* ---------- الأساس ---------- */
+  .site-footer {
+    background: var(--bg-deep);
+    color: var(--text-soft);
+    margin-top: 4rem;
+    padding: 2.5rem 0 1.5rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-body);
+  }
+
+  /* ---------- الزخرفة العلوية ---------- */
+  .footer-ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    color: var(--color-gold-dark);
+  }
+  .footer-ornament span {
+    display: block;
+    width: 80px;
+    height: 1px;
+    background: var(--border-strong);
+  }
+
+  /* ---------- الشبكة ---------- */
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+    gap: 2.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ---------- الأعمدة ---------- */
+  .footer-col { min-width: 0; }
+
+  .footer-heading {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    font-weight: 700;
+  }
+
+  .footer-text {
+    font-size: 0.92rem;
+    color: var(--text-soft);
+    line-height: 1.85;
+    margin-bottom: 1rem;
+  }
+
+  .footer-verse {
+    font-family: var(--font-quran);
+    font-size: 1.05rem;
+    color: var(--color-primary);
+    padding: 0.75rem 1rem;
+    border-inline-start: 2px solid var(--color-gold-dark);
+    background: rgba(139, 105, 20, 0.05);
+    border-radius: var(--radius-sm);
+    line-height: 1.9;
+    margin: 1rem 0 0;
+  }
+  .footer-verse .verse-ref {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+
+  /* ---------- الروابط ---------- */
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .footer-links a {
+    font-size: 0.9rem;
+    color: var(--text-soft);
+    padding: 0.2rem 0;
+    display: inline-block;
+    transition: color var(--t-fast), padding var(--t-fast);
+  }
+  .footer-links a:hover {
+    color: var(--color-primary);
+    padding-inline-start: 0.4rem;
+  }
+
+  /* ---------- بطاقة زنجي ---------- */
+  .footer-contact-note {
+    font-size: 0.87rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .zangi-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.75rem 0.9rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    transition: border-color var(--t-base), color var(--t-base);
+    text-decoration: none;
+  }
+  .zangi-btn:hover {
+    border-color: var(--color-gold-dark);
+    color: var(--color-primary);
+  }
+  .zangi-btn svg {
+    color: var(--color-gold-dark);
+    flex-shrink: 0;
+  }
+  .zangi-btn span {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    min-width: 0;
+  }
+  .zangi-btn strong {
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+  .zangi-btn small {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+    text-align: start;
+  }
+
+  .footer-note {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.7rem;
+    line-height: 1.7;
+  }
+
+  /* ---------- الآية الختامية ---------- */
+  .footer-quran {
+    text-align: center;
+    padding: 1.75rem 1rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .footer-quran p {
+    font-family: var(--font-quran);
+    font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+    color: var(--text);
+    line-height: 2;
+    margin-bottom: 0.4rem;
+  }
+
+  .footer-quran .quran-ref {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* ---------- السطر السفلي ---------- */
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    padding-top: 1rem;
+  }
+
+  .footer-bottom strong {
+    color: var(--text-soft);
+  }
+
+  .footer-desc {
+    color: var(--text-faint);
+    font-size: 0.78rem;
+  }
+
+  .footer-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-gold-dark);
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+  }
+  .footer-tag .dot {
+    color: var(--text-faint);
+  }
+
+  /* ---------- التجاوب ---------- */
+  @media (max-width: 900px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .site-footer { padding: 2rem 0 1rem; margin-top: 2.5rem; }
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+      margin-bottom: 1.75rem;
+    }
+    .footer-bottom {
+      flex-direction: column;
+      text-align: center;
+      gap: 0.6rem;
+    }
+    .hide-sm { display: none; }
+    .footer-ornament span { width: 50px; }
+  }
+</style>
