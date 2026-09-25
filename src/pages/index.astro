@@ -1,0 +1,708 @@
+---
+// ============================================================
+// صليل الصوارم — الصفحة الرئيسية
+// ============================================================
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostCard from '@/components/PostCard.astro';
+
+// ---------- 1. جلب المنشورات ----------
+const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+
+// ترتيب حسب التاريخ (الأحدث أولًا)
+const sortedPosts = allPosts.sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+
+// المنشور المميز (أو الأحدث إن لم يوجد)
+const featuredPost =
+  sortedPosts.find((p) => p.data.featured) || sortedPosts[0] || null;
+
+// باقي المنشورات (بدون المميز) — آخر 6
+const latestPosts = sortedPosts
+  .filter((p) => p.id !== featuredPost?.id)
+  .slice(0, 6);
+
+// ---------- 2. جلب السلاسل ----------
+const allSeries = await getCollection('series');
+const latestSeries = allSeries
+  .sort((a, b) => (b.data.order || 0) - (a.data.order || 0))
+  .slice(0, 3);
+
+// ---------- 3. حساب عدد المنشورات في كل تصنيف ----------
+const categoryLabels: Record<string, string> = {
+  durus: 'دروس',
+  maqalat: 'مقالات',
+  fatawa: 'فتاوى',
+  athar: 'أثر ودليل',
+  tazkiya: 'تزكية',
+  manhaj: 'منهج',
+  misc: 'متفرقات',
+};
+
+const categoryIcons: Record<string, string> = {
+  durus: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20|M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z',
+  maqalat: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z|M14 2v6h6|M16 13H8|M16 17H8|M10 9H8',
+  fatawa: 'M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3|M12 17h.01|M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z',
+  athar: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20|M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z|M9 7h6',
+  tazkiya: 'M12 2a10 10 0 1 0 10 10|M22 12A10 10 0 0 0 12 2v10z',
+  manhaj: 'M3 6h18|M3 12h18|M3 18h18',
+  misc: 'M12 2v20|M2 12h20',
+};
+
+const counts: Record<string, number> = {};
+for (const p of allPosts) {
+  counts[p.data.category] = (counts[p.data.category] || 0) + 1;
+}
+
+const categories = Object.keys(categoryLabels)
+  .map((key) => ({
+    slug: key,
+    label: categoryLabels[key],
+    count: counts[key] || 0,
+    icon: categoryIcons[key] || '',
+  }))
+  .filter((c) => c.count > 0); // نعرض التصنيفات التي فيها منشورات فقط
+---
+
+<BaseLayout
+  title="الرئيسية"
+  description="صليل الصوارم — موقع إسلامي دعوي على منهج أهل السنة والجماعة، بالكتاب والسنة وعلى فهم سلف الأمة"
+>
+  <!-- ============================================================
+       القسم الترحيبي
+       ============================================================ -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <p class="hero-bismillah">بسم الله الرحمن الرحيم</p>
+
+        <h1 class="hero-title">صليل الصوارم</h1>
+
+        <p class="hero-subtitle">
+          موقع إسلامي دعوي قائم على الكتاب والسنة،
+          وعلى فهم سلف الأمة الصالح — يُعنى بنشر العلم النافع،
+          والأثر الصحيح، والدليل الواضح.
+        </p>
+
+        <div class="hero-divider" aria-hidden="true">
+          <span></span>
+          <svg width="22" height="22" viewBox="0 0 40 40" fill="none"
+               stroke="currentColor" stroke-width="1.2">
+            <rect x="8" y="8" width="24" height="24" transform="rotate(45 20 20)"/>
+            <rect x="8" y="8" width="24" height="24"/>
+            <circle cx="20" cy="20" r="2.4" fill="currentColor" stroke="none"/>
+          </svg>
+          <span></span>
+        </div>
+
+        <p class="hero-verse">
+          ﴿ قُلْ هَذِهِ سَبِيلِي أَدْعُو إِلَى اللَّهِ عَلَى بَصِيرَةٍ أَنَا وَمَنِ اتَّبَعَنِي ﴾
+        </p>
+        <p class="hero-verse-ref">— يوسف: ١٠٨</p>
+
+        <div class="hero-actions">
+          <a href="/category/durus/" class="btn btn-primary btn-lg">
+            تصفّح الدروس
+          </a>
+          <a href="/about/" class="btn btn-outline btn-lg">
+            عن الموقع
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <!-- ============================================================
+         المنشور المميز
+         ============================================================ -->
+    {featuredPost && (
+      <section class="section featured-section">
+        <div class="section-head">
+          <h2 class="section-title">منشور مختار</h2>
+        </div>
+        <PostCard post={featuredPost} featured={true} />
+      </section>
+    )}
+
+    <!-- ============================================================
+         أحدث المنشورات
+         ============================================================ -->
+    {latestPosts.length > 0 && (
+      <section class="section">
+        <div class="section-head">
+          <h2 class="section-title">أحدث المنشورات</h2>
+          <a href="/posts/" class="section-link">
+            عرض الكل
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </a>
+        </div>
+
+        <div class="posts-grid">
+          {latestPosts.map((post) => (
+            <PostCard post={post} />
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- حالة: لا توجد منشورات -->
+    {allPosts.length === 0 && (
+      <section class="section empty-section">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <h3>لا توجد منشورات بعد</h3>
+          <p>سيبدأ الموقع بنشر المحتوى قريبًا بإذن الله.</p>
+        </div>
+      </section>
+    )}
+
+    <!-- ============================================================
+         السلاسل
+         ============================================================ -->
+    {latestSeries.length > 0 && (
+      <section class="section">
+        <div class="section-head">
+          <h2 class="section-title">السلاسل العلمية</h2>
+          <a href="/series/" class="section-link">
+            كل السلاسل
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </a>
+        </div>
+
+        <div class="series-grid">
+          {latestSeries.map((s) => (
+            <a href={`/series/${s.slug}/`} class="series-card">
+              <div class="series-card-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+              </div>
+              <div class="series-card-body">
+                <h3 class="series-card-title">{s.data.title}</h3>
+                <p class="series-card-desc">{s.data.description}</p>
+                <span class="series-card-meta">
+                  <span class="badge">{categoryLabels[s.data.category] || s.data.category}</span>
+                  {s.data.complete && <span class="badge badge-gold">مكتملة</span>}
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- ============================================================
+         أبواب الموقع (التصنيفات)
+         ============================================================ -->
+    {categories.length > 0 && (
+      <section class="section">
+        <div class="section-head">
+          <h2 class="section-title">أبواب الموقع</h2>
+        </div>
+
+        <div class="categories-grid">
+          {categories.map((cat) => (
+            <a href={`/category/${cat.slug}/`} class="category-card">
+              <div class="category-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  {cat.icon.split('|').map((d) => <path d={d} />)}
+                </svg>
+              </div>
+              <div class="category-card-body">
+                <h3 class="category-card-title">{cat.label}</h3>
+                <span class="category-card-count">{cat.count} منشور</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- ============================================================
+         دعوة للتواصل
+         ============================================================ -->
+    <section class="section contact-cta">
+      <div class="cta-card">
+        <div class="cta-content">
+          <h2 class="cta-title">هل لديك سؤال أو ملاحظة؟</h2>
+          <p class="cta-text">
+            للتواصل مع القائمين على الموقع، يمكنك مراسلتنا عبر تطبيق زنجي.
+          </p>
+        </div>
+        <a
+          href="https://services.zangi.com/dl/conversation/9316646158"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-gold btn-lg cta-btn"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          تواصل عبر زنجي
+        </a>
+      </div>
+    </section>
+
+  </div>
+</BaseLayout>
+
+<style>
+  /* ============================================================
+     القسم الترحيبي
+     ============================================================ */
+  .hero {
+    padding: 3.5rem 0 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+  }
+
+  .hero-inner {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .hero-bismillah {
+    font-family: var(--font-quran);
+    font-size: 1.15rem;
+    color: var(--color-gold-dark);
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+  }
+
+  .hero-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    color: var(--text);
+    margin-bottom: 0.9rem;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+
+  .hero-subtitle {
+    font-size: 1.02rem;
+    color: var(--text-soft);
+    line-height: 1.9;
+    max-width: 640px;
+    margin: 0 auto 1.75rem;
+  }
+
+  .hero-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: var(--color-gold-dark);
+    margin: 1.75rem 0;
+  }
+
+  .hero-divider span {
+    display: block;
+    width: 80px;
+    height: 1px;
+    background: var(--border-strong);
+  }
+
+  .hero-verse {
+    font-family: var(--font-quran);
+    font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+    color: var(--color-primary);
+    line-height: 2;
+    margin-bottom: 0.4rem;
+  }
+
+  .hero-verse-ref {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 2rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ============================================================
+     الأقسام العامة
+     ============================================================ */
+  .section {
+    margin-bottom: 3.5rem;
+  }
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+  }
+
+  .section-title {
+    font-family: var(--font-heading);
+    font-size: 1.55rem;
+    color: var(--text);
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-gold-dark);
+    display: inline-block;
+    font-weight: 700;
+  }
+
+  .section-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    transition: all var(--t-base);
+  }
+
+  .section-link:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--bg-elevated);
+  }
+
+  /* ============================================================
+     شبكة المنشورات
+     ============================================================ */
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .featured-section {
+    margin-bottom: 3rem;
+  }
+
+  /* ============================================================
+     شبكة السلاسل
+     ============================================================ */
+  .series-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .series-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all var(--t-base);
+    color: inherit;
+    position: relative;
+  }
+
+  .series-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--color-gold-dark);
+    border-top-left-radius: var(--radius-md);
+    border-bottom-left-radius: var(--radius-md);
+    opacity: 0.3;
+    transition: opacity var(--t-base);
+  }
+
+  .series-card:hover {
+    border-color: var(--border-gold);
+    box-shadow: var(--shadow-sm);
+    color: inherit;
+  }
+
+  .series-card:hover::before {
+    opacity: 1;
+  }
+
+  .series-card-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-gold-dark);
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+
+  .series-card-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .series-card-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+  }
+
+  .series-card-desc {
+    font-size: 0.87rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 0.6rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .series-card-meta {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  /* ============================================================
+     شبكة التصنيفات
+     ============================================================ */
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  .category-card {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all var(--t-base);
+    color: inherit;
+  }
+
+  .category-card:hover {
+    border-color: var(--color-primary);
+    color: inherit;
+  }
+
+  .category-card-icon {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-soft);
+    color: var(--color-primary);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    transition: all var(--t-base);
+  }
+
+  .category-card:hover .category-card-icon {
+    background: var(--color-primary);
+    color: var(--bg-elevated);
+    border-color: var(--color-primary);
+  }
+
+  .category-card-body {
+    min-width: 0;
+  }
+
+  .category-card-title {
+    font-family: var(--font-heading);
+    font-size: 1.02rem;
+    color: var(--text);
+    margin: 0 0 0.15rem;
+  }
+
+  .category-card-count {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* ============================================================
+     حالة فارغة
+     ============================================================ */
+  .empty-section {
+    padding: 2rem 0;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3.5rem 1rem;
+    background: var(--bg-soft);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+  }
+
+  .empty-state svg {
+    color: var(--color-gold-dark);
+    margin-bottom: 1rem;
+    opacity: 0.8;
+  }
+
+  .empty-state h3 {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+
+  .empty-state p {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    margin: 0;
+  }
+
+  /* ============================================================
+     دعوة للتواصل
+     ============================================================ */
+  .contact-cta {
+    margin-top: 4rem;
+  }
+
+  .cta-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    inset-inline: 0;
+    height: 3px;
+    background: linear-gradient(to left, transparent, var(--color-gold-dark), transparent);
+  }
+
+  .cta-content {
+    min-width: 0;
+  }
+
+  .cta-title {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+  }
+
+  .cta-text {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.75;
+  }
+
+  .cta-btn {
+    flex-shrink: 0;
+  }
+
+  /* ============================================================
+     التجاوب
+     ============================================================ */
+  @media (max-width: 768px) {
+    .hero {
+      padding: 2.5rem 0 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .hero-title {
+      font-size: 2.1rem;
+    }
+
+    .hero-subtitle {
+      font-size: 0.95rem;
+    }
+
+    .section {
+      margin-bottom: 2.5rem;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+    }
+
+    .posts-grid,
+    .series-grid,
+    .categories-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cta-card {
+      flex-direction: column;
+      text-align: center;
+      padding: 1.5rem;
+    }
+
+    .cta-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-actions {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .hero-actions .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .section-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
