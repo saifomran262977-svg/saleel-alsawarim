@@ -39,7 +39,6 @@ export default defineConfig({
     locales: ['ar', 'en'],
     routing: {
       prefixDefaultLocale: false, // العربية على / مباشرة، الإنجليزية على /en/
-      redirectToDefaultLocale: false,
     },
   },
 
