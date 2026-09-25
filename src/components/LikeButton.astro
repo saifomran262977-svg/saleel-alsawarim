@@ -1,0 +1,280 @@
+---
+// ============================================================
+// صليل الصوارم — زر الإعجاب
+// ============================================================
+interface Props {
+  postSlug: string;
+  compact?: boolean;
+  showCount?: boolean;
+}
+
+const { postSlug, compact = false, showCount = true } = Astro.props;
+---
+
+<button
+  class:list={['like-btn', compact && 'like-btn-compact']}
+  id="like-btn"
+  data-post-slug={postSlug}
+  aria-label="أعجبني"
+  aria-pressed="false"
+  title="أعجبني"
+>
+  <svg
+    class="like-icon"
+    width={compact ? 16 : 18}
+    height={compact ? 16 : 18}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+  </svg>
+
+  {showCount && (
+    <span class="like-count" id="like-count">0</span>
+  )}
+
+  <!-- مؤشر التحميل -->
+  <span class="like-spinner" id="like-spinner" hidden></span>
+</button>
+
+<style>
+  /* ---------- الزر الأساسي ---------- */
+  .like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.95rem;
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text-soft);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--t-base);
+    position: relative;
+    min-width: 68px;
+    justify-content: center;
+  }
+
+  .like-btn:hover:not(:disabled) {
+    border-color: var(--color-maroon);
+    color: var(--color-maroon);
+  }
+
+  /* ---------- حالة الإعجاب ---------- */
+  .like-btn.liked {
+    background: var(--color-maroon);
+    border-color: var(--color-maroon);
+    color: #f7f3ea;
+  }
+
+  .like-btn.liked .like-icon {
+    fill: currentColor;
+    stroke: currentColor;
+  }
+
+  .like-btn.liked:hover {
+    background: #4a1823;
+    border-color: #4a1823;
+  }
+
+  /* ---------- حالة التحميل ---------- */
+  .like-btn.loading {
+    pointer-events: none;
+    opacity: 0.75;
+  }
+
+  .like-btn.loading .like-icon,
+  .like-btn.loading .like-count {
+    visibility: hidden;
+  }
+
+  .like-spinner {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: likeSpin 0.7s linear infinite;
+  }
+
+  @keyframes likeSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ---------- حركة نبض عند الإعجاب ---------- */
+  .like-btn.just-liked .like-icon {
+    animation: likePop 0.4s ease;
+  }
+
+  @keyframes likePop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.35); }
+    70%  { transform: scale(0.9); }
+    100% { transform: scale(1); }
+  }
+
+  /* ---------- العداد ---------- */
+  .like-count {
+    font-variant-numeric: tabular-nums;
+    min-width: 1ch;
+  }
+
+  /* ---------- النسخة المضغوطة ---------- */
+  .like-btn-compact {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+    min-width: 58px;
+    gap: 0.35rem;
+  }
+
+  /* ---------- تعطيل ---------- */
+  .like-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ---------- رسالة صغيرة عائمة ---------- */
+  .like-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: var(--bg);
+    padding: 0.6rem 1.1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+    z-index: 300;
+    box-shadow: var(--shadow-lg);
+    animation: toastIn 0.25s ease;
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to   { opacity: 1; transform: translate(-50%, 0); }
+  }
+</style>
+
+<script>
+  // ============================================================
+  // منطق زر الإعجاب
+  // ============================================================
+  import {
+    getSupabase,
+    getLikesCount,
+    hasUserLiked,
+    toggleLike,
+    signInWithGoogle,
+  } from '@/lib/supabase';
+
+  function showToast(message: string) {
+    const existing = document.querySelector('.like-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'like-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.25s ease';
+      setTimeout(() => toast.remove(), 250);
+    }, 2200);
+  }
+
+  function setupLikeButton() {
+    const btn = document.getElementById('like-btn');
+    if (!btn) return;
+
+    const postSlug = btn.dataset.postSlug;
+    if (!postSlug) return;
+
+    const countEl = document.getElementById('like-count');
+    const spinner = document.getElementById('like-spinner');
+
+    // ---------- 1. تحميل الحالة الأولية ----------
+    async function loadInitialState() {
+      try {
+        const [count, liked] = await Promise.all([
+          getLikesCount(postSlug),
+          hasUserLiked(postSlug),
+        ]);
+
+        if (countEl) countEl.textContent = String(count);
+        btn.classList.toggle('liked', liked);
+        btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+      } catch (e) {
+        // فشل صامت — الزر يبقى بحالته الافتراضية
+        if (countEl) countEl.textContent = '0';
+      }
+    }
+
+    // ---------- 2. تبديل الإعجاب ----------
+    async function handleClick() {
+      btn.classList.add('loading');
+      if (spinner) spinner.hidden = false;
+
+      try {
+        const supabase = getSupabase();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // لم يسجل الدخول → أعرض رسالة وافتح تسجيل الدخول
+        if (!user) {
+          showToast('يرجى تسجيل الدخول للإعجاب');
+          setTimeout(() => {
+            signInWithGoogle(window.location.pathname);
+          }, 800);
+          return;
+        }
+
+        // تبديل الإعجاب
+        const result = await toggleLike(postSlug);
+
+        if (countEl) countEl.textContent = String(result.count);
+        btn.classList.toggle('liked', result.liked);
+        btn.setAttribute('aria-pressed', result.liked ? 'true' : 'false');
+
+        if (result.liked) {
+          btn.classList.add('just-liked');
+          setTimeout(() => btn.classList.remove('just-liked'), 450);
+        }
+      } catch (e: any) {
+        console.error('[like] فشل التبديل:', e?.message);
+        showToast('تعذر حفظ الإعجاب، حاول مرة أخرى');
+      } finally {
+        btn.classList.remove('loading');
+        if (spinner) spinner.hidden = true;
+      }
+    }
+
+    // ---------- 3. ربط الأحداث ----------
+    btn.addEventListener('click', handleClick);
+
+    // تحديث الحالة بعد تسجيل الدخول
+    const supabase = getSupabase();
+    supabase.auth.onAuthStateChange(() => {
+      loadInitialState();
+    });
+
+    // تحميل أولي
+    loadInitialState();
+  }
+
+  // تشغيل عند تحميل الصفحة
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupLikeButton);
+  } else {
+    setupLikeButton();
+  }
+</script>
