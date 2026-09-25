@@ -645,6 +645,27 @@ const otherLangHref =
     .logo-text strong { font-size: 1.05rem; }
     .lang-switch { width: 34px; height: 34px; }
   }
+/* ============================================================
+   إصلاح: إخفاء القائمة الجانبية ونافذة البحث افتراضيًا
+   ============================================================ */
+.mobile-drawer:not(.open) {
+  display: none !important;
+}
+
+.mobile-drawer {
+  right: 0 !important;
+  left: auto !important;
+  transform: translateX(100%) !important;
+}
+
+.mobile-drawer.open {
+  display: flex !important;
+  transform: translateX(0) !important;
+}
+
+.search-overlay[hidden] {
+  display: none !important;
+}
 </style>
 
 <script>
