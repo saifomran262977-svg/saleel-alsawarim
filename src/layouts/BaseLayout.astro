@@ -1,8 +1,10 @@
 ---
 // ============================================================
-// صليل الصوارم — القالب الأساسي لكل الصفحات
+// صليل الصوارم — القالب الأساسي
 // ============================================================
 import '@/styles/global.css';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
 
 interface Props {
   title?: string;
@@ -10,19 +12,28 @@ interface Props {
   image?: string;
   lang?: 'ar' | 'en';
   noIndex?: boolean;
+  hideHeader?: boolean;
+  hideFooter?: boolean;
+  fullWidth?: boolean;
 }
 
 const {
   title = 'صليل الصوارم',
-  description = 'موقع إسلامي دعوي على منهج أهل السنة والجماعة — بالأثر والدليل من الكتاب والسنة',
+  description = 'موقع إسلامي دعوي على منهج أهل السنة والجماعة — بالكتاب والسنة وعلى فهم سلف الأمة',
   image = '/og-default.jpg',
   lang = 'ar',
   noIndex = false,
+  hideHeader = false,
+  hideFooter = false,
+  fullWidth = false,
 } = Astro.props;
 
-const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://saleel-alsawarim.pages.dev';
+const siteUrl =
+  Astro.site?.toString().replace(/\/$/, '') ||
+  'https://saleel-alsawarim.pages.dev';
+
 const currentUrl = new URL(Astro.url.pathname, siteUrl).toString();
-const fullTitle = title === 'صليل الصوارم' ? title : `${title} | صليل الصوارم`;
+const fullTitle = title === 'صليل الصوارم' ? title : `${title} — صليل الصوارم`;
 
 const dir = lang === 'ar' ? 'rtl' : 'ltr';
 const ogLocale = lang === 'ar' ? 'ar_SA' : 'en_US';
@@ -31,140 +42,160 @@ const altLocale = lang === 'ar' ? 'en_US' : 'ar_SA';
 
 <!DOCTYPE html>
 <html lang={lang} dir={dir} data-theme="light">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0e7c4a" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1f4636" />
 
-  <!-- العنوان والوصف -->
-  <title>{fullTitle}</title>
-  <meta name="description" content={description} />
-  <link rel="canonical" href={currentUrl} />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={currentUrl} />
 
-  <!-- منع الفهرسة إن طُلب -->
-  {noIndex && <meta name="robots" content="noindex, nofollow" />}
+    {noIndex && <meta name="robots" content="noindex, nofollow" />}
 
-  <!-- Open Graph (مشاركة على فيسبوك وتويتر) -->
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="صليل الصوارم" />
-  <meta property="og:title" content={fullTitle} />
-  <meta property="og:description" content={description} />
-  <meta property="og:url" content={currentUrl} />
-  <meta property="og:image" content={new URL(image, siteUrl).toString()} />
-  <meta property="og:locale" content={ogLocale} />
-  <meta property="og:locale:alternate" content={altLocale} />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="صليل الصوارم" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={currentUrl} />
+    <meta property="og:image" content={new URL(image, siteUrl).toString()} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:locale:alternate" content={altLocale} />
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content={fullTitle} />
-  <meta name="twitter:description" content={description} />
-  <meta name="twitter:image" content={new URL(image, siteUrl).toString()} />
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(image, siteUrl).toString()} />
 
-  <!-- الأيقونات -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- أيقونات -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-  <!-- Sitemap -->
-  <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    <!-- خلاصات -->
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="صليل الصوارم"
+      href="/rss.xml"
+    />
 
-  <!-- RSS -->
-  <link rel="alternate" type="application/rss+xml" title="صليل الصوارم" href="/rss.xml" />
+    <!-- سكربت الوضع الليلي (قبل الرسم لمنع الوميض) -->
+    <script is:inline>
+      (function () {
+        try {
+          const stored = localStorage.getItem('theme');
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.setAttribute(
+            'data-theme',
+            stored || (prefersDark ? 'dark' : 'light')
+          );
+        } catch (e) {}
+      })();
+    </script>
+  </head>
 
-  <!-- سكربت الوضع الليلي (يعمل قبل رسم الصفحة لمنع الوميض) -->
-  <script is:inline>
-    (function () {
-      try {
-        const stored = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = stored || (prefersDark ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
-      } catch (e) {}
-    })();
-  </script>
-</head>
+  <body>
+    <a href="#main-content" class="skip-link">تخطَّ إلى المحتوى</a>
 
-<body>
-  <!-- شريط الزخرفة العلوي -->
-  <div class="ornament-top"></div>
+    <div class="ornament-top"></div>
 
-  <!-- الرأس -->
-  <slot name="header" />
+    {!hideHeader && <Header lang={lang} />}
 
-  <!-- المحتوى الرئيسي -->
-  <main id="main-content">
-    <slot />
-  </main>
+    <main id="main-content">
+      <slot />
+    </main>
 
-  <!-- التذييل -->
-  <slot name="footer" />
+    {!hideFooter && <Footer />}
 
-  <!-- زر العودة للأعلى -->
-  <button
-    id="back-to-top"
-    class="back-to-top no-print"
-    aria-label="العودة للأعلى"
-    hidden
-  >
-    ▲
-  </button>
+    <!-- زر العودة للأعلى -->
+    <button
+      id="back-to-top"
+      class="back-to-top no-print"
+      aria-label="العودة للأعلى"
+      hidden
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="19" x2="12" y2="5"></line>
+        <polyline points="5 12 12 5 19 12"></polyline>
+      </svg>
+    </button>
 
-  <!-- زر تبديل الوضع الليلي -->
-  <script is:inline>
-    // تبديل الوضع الليلي/النهاري
-    window.toggleTheme = function () {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      try {
-        localStorage.setItem('theme', next);
-      } catch (e) {}
-    };
-  </script>
-
-  <!-- زر العودة للأعلى (منطق) -->
-  <script>
-    const btn = document.getElementById('back-to-top');
-    if (btn) {
-      const onScroll = () => {
-        btn.hidden = window.scrollY < 400;
+    <script is:inline>
+      // تبديل الوضع الليلي
+      window.toggleTheme = function () {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try {
+          localStorage.setItem('theme', next);
+        } catch (e) {}
       };
-      window.addEventListener('scroll', onScroll, { passive: true });
-      btn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-      onScroll();
-    }
-  </script>
+    </script>
 
-  <style>
-    #main-content {
-      min-height: calc(100vh - 200px);
-    }
+    <script>
+      // زر العودة للأعلى
+      const btn = document.getElementById('back-to-top');
+      if (btn) {
+        const onScroll = () => {
+          btn.hidden = window.scrollY < 500;
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        btn.addEventListener('click', () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        onScroll();
+      }
+    </script>
 
-    .back-to-top {
-      position: fixed;
-      bottom: 1.5rem;
-      left: 1.5rem;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: var(--color-primary);
-      color: #fff;
-      font-size: 1.2rem;
-      box-shadow: var(--shadow-lg);
-      transition: all var(--t-base);
-      z-index: 100;
-    }
+    <style>
+      #main-content {
+        min-height: calc(100vh - 300px);
+      }
 
-    .back-to-top:hover {
-      background: var(--color-primary-dark);
-      transform: translateY(-3px);
-    }
+      /* رابط التخطي للوصولية */
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        inset-inline-start: 1rem;
+        background: var(--color-primary);
+        color: #f7f3ea;
+        padding: 0.6rem 1rem;
+        border-radius: var(--radius-sm);
+        z-index: 999;
+        transition: top var(--t-base);
+      }
+      .skip-link:focus {
+        top: 1rem;
+        color: #f7f3ea;
+      }
 
-    [dir="ltr"] .back-to-top {
-      left: auto;
-      right: 1.5rem;
-    }
-  </style>
-</body>
+      /* زر العودة للأعلى */
+      .back-to-top {
+        position: fixed;
+        bottom: 1.5rem;
+        inset-inline-end: 1.5rem;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-elevated);
+        color: var(--text-soft);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        transition: all var(--t-base);
+        z-index: 100;
+      }
+      .back-to-top:hover {
+        background: var(--color-primary);
+        color: #f7f3ea;
+        border-color: var(--color-primary);
+      }
+    </style>
+  </body>
 </html>
