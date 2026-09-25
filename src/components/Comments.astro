@@ -1,0 +1,690 @@
+---
+// ============================================================
+// صليل الصوارم — نظام التعليقات
+// ============================================================
+interface Props {
+  postSlug: string;
+}
+
+const { postSlug } = Astro.props;
+---
+
+<section class="comments-section" id="comments" aria-labelledby="comments-title">
+  <header class="comments-header">
+    <h2 id="comments-title" class="comments-title">
+      التعليقات
+      <span class="comments-count" id="comments-count">0</span>
+    </h2>
+    <p class="comments-subtitle">
+      نرجو الالتزام بالأدب العلمي، والتعليق بعلم أو سؤال محترم.
+    </p>
+  </header>
+
+  <!-- نموذج الإضافة -->
+  <div class="comment-form-wrapper" id="comment-form-wrapper">
+    <!-- حالة: غير مسجّل -->
+    <div class="login-prompt" id="login-prompt" hidden>
+      <div class="login-prompt-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <p class="login-prompt-text">
+        سجّل دخولك للمشاركة في التعليقات
+      </p>
+      <button class="btn btn-primary" id="comment-login-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.05 1.05-2.7 2.2-5.6 2.2-4.42 0-8.02-3.62-8.02-8.04s3.6-8.04 8.02-8.04c2.38 0 4.12.94 5.42 2.16l2.32-2.32C18.42 2.66 15.72 1.5 12.48 1.5 6.42 1.5 1.5 6.42 1.5 12.48S6.42 23.46 12.48 23.46c3.68 0 6.44-1.22 8.6-3.46 2.22-2.22 2.9-5.34 2.9-7.86 0-.52-.04-1.02-.12-1.48l-11.38.26z"/>
+        </svg>
+        الدخول بجوجل
+      </button>
+    </div>
+
+    <!-- حالة: مسجّل -->
+    <form class="comment-form" id="comment-form" hidden>
+      <div class="comment-form-user">
+        <img id="comment-user-avatar" src="" alt="" width="40" height="40" />
+        <span id="comment-user-name"></span>
+      </div>
+      <textarea
+        id="comment-input"
+        class="comment-textarea"
+        placeholder="اكتب تعليقك هنا..."
+        rows="3"
+        maxlength="2000"
+        required
+      ></textarea>
+      <div class="comment-form-footer">
+        <span class="char-counter" id="char-counter">0 / 2000</span>
+        <div class="comment-form-actions">
+          <button type="button" class="btn btn-ghost btn-sm" id="comment-cancel">
+            إلغاء
+          </button>
+          <button type="submit" class="btn btn-primary btn-sm" id="comment-submit">
+            <span class="btn-text">نشر التعليق</span>
+            <span class="btn-spinner" hidden></span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- قائمة التعليقات -->
+  <div class="comments-list" id="comments-list">
+    <div class="comments-loading" id="comments-loading">
+      <span class="spinner"></span>
+      <span>جارٍ تحميل التعليقات...</span>
+    </div>
+  </div>
+
+  <!-- حالة: لا توجد تعليقات -->
+  <div class="comments-empty" id="comments-empty" hidden>
+    <p>لا توجد تعليقات بعد. كن أول من يشارك.</p>
+  </div>
+
+  <!-- زر تحميل المزيد -->
+  <div class="comments-load-more-wrapper" id="load-more-wrapper" hidden>
+    <button class="btn btn-outline btn-sm" id="load-more-btn">
+      تحميل تعليقات أقدم
+    </button>
+  </div>
+</section>
+
+<style>
+  /* ---------- القسم الأساسي ---------- */
+  .comments-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ---------- الرأس ---------- */
+  .comments-header {
+    margin-bottom: 1.75rem;
+  }
+
+  .comments-title {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.4rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .comments-count {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 0.15rem 0.6rem;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .comments-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  /* ---------- نموذج الإضافة ---------- */
+  .comment-form-wrapper {
+    margin-bottom: 2rem;
+  }
+
+  /* حالة غير مسجّل */
+  .login-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1.75rem 1rem;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    text-align: center;
+  }
+
+  .login-prompt-icon {
+    color: var(--color-gold-dark);
+  }
+
+  .login-prompt-text {
+    font-size: 0.95rem;
+    color: var(--text-soft);
+    margin: 0;
+  }
+
+  /* حالة مسجّل */
+  .comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1.1rem 1.2rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .comment-form-user {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .comment-form-user img {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+
+  .comment-textarea {
+    width: 100%;
+    padding: 0.8rem 0.95rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.75;
+    resize: vertical;
+    min-height: 90px;
+    transition: border-color var(--t-fast);
+  }
+
+  .comment-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+
+  .comment-form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .char-counter {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .char-counter.over {
+    color: var(--danger);
+    font-weight: 600;
+  }
+
+  .comment-form-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* زر مع Spinner */
+  #comment-submit {
+    position: relative;
+    min-width: 120px;
+  }
+
+  #comment-submit.loading .btn-text {
+    visibility: hidden;
+  }
+
+  .btn-spinner {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #f7f3ea;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: commentSpin 0.7s linear infinite;
+  }
+
+  @keyframes commentSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ---------- قائمة التعليقات ---------- */
+  .comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .comments-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* بطاقة تعليق */
+  .comment-item {
+    display: flex;
+    gap: 0.85rem;
+    padding: 1rem 1.1rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: border-color var(--t-base);
+  }
+
+  .comment-item:hover {
+    border-color: var(--border-strong);
+  }
+
+  .comment-avatar {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-soft);
+    object-fit: cover;
+  }
+
+  .comment-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .comment-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  .comment-author {
+    font-weight: 700;
+    font-size: 0.93rem;
+    color: var(--text);
+  }
+
+  .comment-time {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+  }
+
+  .comment-content {
+    font-size: 0.93rem;
+    color: var(--text-soft);
+    line-height: 1.85;
+    margin-bottom: 0.5rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .comment-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+  }
+
+  .comment-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    transition: all var(--t-fast);
+    cursor: pointer;
+  }
+
+  .comment-action:hover {
+    background: var(--bg-soft);
+    color: var(--color-primary);
+  }
+
+  .comment-action.danger:hover {
+    color: var(--danger);
+  }
+
+  /* ---------- حالة فارغة ---------- */
+  .comments-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    background: var(--bg-soft);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+  }
+
+  /* ---------- زر تحميل المزيد ---------- */
+  .comments-load-more-wrapper {
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+
+  /* ---------- تعليق جديد (تمييز مؤقت) ---------- */
+  .comment-item.new-comment {
+    animation: commentNew 1.2s ease;
+  }
+
+  @keyframes commentNew {
+    0%   { background: rgba(139, 105, 20, 0.15); }
+    100% { background: var(--bg-elevated); }
+  }
+
+  /* ---------- التجاوب ---------- */
+  @media (max-width: 640px) {
+    .comment-item {
+      padding: 0.85rem 0.9rem;
+      gap: 0.65rem;
+    }
+    .comment-avatar {
+      width: 36px;
+      height: 36px;
+    }
+    .comment-form {
+      padding: 0.9rem 1rem;
+    }
+    .comments-title {
+      font-size: 1.25rem;
+    }
+    .comment-form-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .comment-form-actions {
+      justify-content: flex-end;
+    }
+  }
+</style>
+
+<script>
+  // ============================================================
+  // منطق التعليقات
+  // ============================================================
+  import {
+    getSupabase,
+    getComments,
+    addComment,
+    deleteComment,
+    signInWithGoogle,
+    timeAgo,
+    type Comment,
+  } from '@/lib/supabase';
+
+  const PAGE_SIZE = 10;
+
+  function setupComments() {
+    const section = document.querySelector('.comments-section') as HTMLElement | null;
+    if (!section) return;
+
+    // الرابط: نستخرج الـ slug من المسار
+    const postSlug = window.location.pathname
+      .replace(/^\/posts\//, '')
+      .replace(/\/$/, '');
+
+    if (!postSlug) return;
+
+    // ---------- عناصر ----------
+    const loginPrompt = document.getElementById('login-prompt');
+    const form = document.getElementById('comment-form') as HTMLFormElement | null;
+    const list = document.getElementById('comments-list');
+    const loading = document.getElementById('comments-loading');
+    const empty = document.getElementById('comments-empty');
+    const countEl = document.getElementById('comments-count');
+    const input = document.getElementById('comment-input') as HTMLTextAreaElement | null;
+    const submitBtn = document.getElementById('comment-submit') as HTMLButtonElement | null;
+    const cancelBtn = document.getElementById('comment-cancel');
+    const loginBtn = document.getElementById('comment-login-btn');
+    const charCounter = document.getElementById('char-counter');
+    const avatar = document.getElementById('comment-user-avatar') as HTMLImageElement | null;
+    const userName = document.getElementById('comment-user-name');
+    const loadMoreWrapper = document.getElementById('load-more-wrapper');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+
+    let allComments: Comment[] = [];
+    let visibleCount = PAGE_SIZE;
+    let currentUser: any = null;
+
+    // ---------- تبديل الحالة (مسجّل / غير مسجّل) ----------
+    function updateFormVisibility(user: any) {
+      currentUser = user;
+      if (!loginPrompt || !form) return;
+
+      if (user) {
+        loginPrompt.hidden = true;
+        form.hidden = false;
+        if (avatar) {
+          avatar.src = user.user_metadata?.avatar_url || '';
+          avatar.alt = user.user_metadata?.full_name || 'مستخدم';
+        }
+        if (userName) {
+          userName.textContent = user.user_metadata?.full_name || 'مستخدم';
+        }
+      } else {
+        loginPrompt.hidden = false;
+        form.hidden = true;
+      }
+    }
+
+    // ---------- عرض تعليق واحد ----------
+    function renderComment(c: Comment, isNew = false): HTMLElement {
+      const item = document.createElement('article');
+      item.className = 'comment-item' + (isNew ? ' new-comment' : '');
+      item.dataset.id = c.id;
+
+      const isOwner = currentUser && currentUser.id === c.user_id;
+
+      const avatarUrl = c.user_avatar ||
+        `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(c.user_name || 'م')}&backgroundColor=1f4636&textColor=f7f3ea`;
+
+      item.innerHTML = `
+        <img class="comment-avatar" src="${avatarUrl}" alt="" loading="lazy" />
+        <div class="comment-body">
+          <div class="comment-head">
+            <span class="comment-author">${escapeHtml(c.user_name || 'مستخدم')}</span>
+            <time class="comment-time" datetime="${c.created_at}">${timeAgo(c.created_at)}</time>
+          </div>
+          <div class="comment-content">${escapeHtml(c.content)}</div>
+          <div class="comment-actions">
+            ${isOwner ? `
+              <button class="comment-action danger" data-action="delete" data-id="${c.id}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                حذف
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+      return item;
+    }
+
+    function escapeHtml(s: string): string {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    // ---------- عرض القائمة ----------
+    function renderList() {
+      if (!list) return;
+
+      if (allComments.length === 0) {
+        if (empty) empty.hidden = false;
+        if (loading) loading.hidden = true;
+        if (loadMoreWrapper) loadMoreWrapper.hidden = true;
+        return;
+      }
+
+      if (empty) empty.hidden = true;
+
+      // أحدث التعليقات أولاً
+      const sorted = [...allComments].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      const visible = sorted.slice(0, visibleCount);
+
+      // تنظيف القائمة (باستثناء مؤشر التحميل)
+      Array.from(list.children).forEach((child) => {
+        if (child.id !== 'comments-loading') child.remove();
+      });
+
+      visible.forEach((c) => {
+        list.appendChild(renderComment(c));
+      });
+
+      // حالة زر "تحميل المزيد"
+      if (loadMoreWrapper) {
+        loadMoreWrapper.hidden = visibleCount >= allComments.length;
+      }
+    }
+
+    // ---------- تحديث العداد ----------
+    function updateCount() {
+      if (countEl) countEl.textContent = String(allComments.length);
+    }
+
+    // ---------- تحميل أولي ----------
+    async function loadComments() {
+      try {
+        allComments = await getComments(postSlug);
+        updateCount();
+        renderList();
+      } catch (e) {
+        console.error('[comments] فشل تحميل:', e);
+        if (empty) {
+          empty.hidden = false;
+          empty.innerHTML = '<p>تعذر تحميل التعليقات. حاول لاحقًا.</p>';
+        }
+      } finally {
+        if (loading) loading.hidden = true;
+      }
+    }
+
+    // ---------- إضافة تعليق ----------
+    async function handleSubmit(e: Event) {
+      e.preventDefault();
+      if (!input || !submitBtn) return;
+
+      const content = input.value.trim();
+      if (content.length < 2) {
+        alert('التعليق قصير جدًا');
+        return;
+      }
+
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      try {
+        const newComment = await addComment(postSlug, content);
+        if (newComment) {
+          // جلب بيانات المستخدم لإتمام العرض
+          newComment.user_name = currentUser?.user_metadata?.full_name || 'مستخدم';
+          newComment.user_avatar = currentUser?.user_metadata?.avatar_url;
+
+          allComments.push(newComment);
+          input.value = '';
+          updateCharCounter();
+          updateCount();
+          visibleCount = Math.max(visibleCount, allComments.length);
+          renderList();
+        }
+      } catch (err: any) {
+        alert(err?.message || 'تعذر نشر التعليق');
+      } finally {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }
+    }
+
+    // ---------- حذف تعليق ----------
+    async function handleDelete(id: string) {
+      if (!confirm('هل تريد حذف هذا التعليق؟')) return;
+      try {
+        await deleteComment(id);
+        allComments = allComments.filter((c) => c.id !== id);
+        updateCount();
+        renderList();
+      } catch (err: any) {
+        alert(err?.message || 'تعذر الحذف');
+      }
+    }
+
+    // ---------- عدّاد الأحرف ----------
+    function updateCharCounter() {
+      if (!input || !charCounter) return;
+      const len = input.value.length;
+      charCounter.textContent = `${len} / 2000`;
+      charCounter.classList.toggle('over', len > 2000);
+    }
+
+    // ---------- ربط الأحداث ----------
+    form?.addEventListener('submit', handleSubmit);
+
+    input?.addEventListener('input', updateCharCounter);
+
+    cancelBtn?.addEventListener('click', () => {
+      if (input) input.value = '';
+      updateCharCounter();
+    });
+
+    loginBtn?.addEventListener('click', () => {
+      signInWithGoogle(window.location.pathname);
+    });
+
+    loadMoreBtn?.addEventListener('click', () => {
+      visibleCount += PAGE_SIZE;
+      renderList();
+    });
+
+    // حذف (Delegate)
+    list?.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest('[data-action="delete"]') as HTMLElement | null;
+      if (!target) return;
+      const id = target.dataset.id;
+      if (id) handleDelete(id);
+    });
+
+    // ---------- متابعة حالة الدخول ----------
+    const supabase = getSupabase();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      updateFormVisibility(user);
+      loadComments();
+    });
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      updateFormVisibility(session?.user ?? null);
+      renderList(); // لإظهار/إخفاء أزرار الحذف
+    });
+  }
+
+  // تشغيل
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupComments);
+  } else {
+    setupComments();
+  }
+</script>
