@@ -1,76 +1,95 @@
 /* ============================================================
-   صليل الصوارم — التصميم الأساسي
+   صليل الصوارم — التصميم الأساسي (طابع جدي كلاسيكي)
    ============================================================ */
 
-/* ---------- 1. خطوط عربية من Google ---------- */
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&family=Scheherazade+New:wght@400;700&display=swap');
+/* ---------- 1. خطوط عربية كلاسيكية ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&display=swap');
 
-/* ---------- 2. المتغيرات (الألوان والقياسات) ---------- */
+/* ---------- 2. المتغيرات ---------- */
 :root {
-  /* الألوان الأساسية */
-  --color-primary: #0e7c4a;
-  --color-primary-dark: #0a5c36;
-  --color-primary-light: #14a05f;
-  --color-gold: #c9a227;
-  --color-gold-light: #e5c158;
+  /* ألوان أساسية — رصينة */
+  --color-primary: #1f4636;
+  --color-primary-dark: #143025;
+  --color-primary-light: #2d5f49;
+  --color-gold: #8b6914;
+  --color-gold-dark: #6b4f0a;
+  --color-maroon: #5c1e2b;
 
-  /* الألوان المحايدة — الوضع النهاري */
-  --bg: #f8f6f1;
-  --bg-elevated: #ffffff;
-  --bg-soft: #efeae0;
+  /* الخلفيات — رَقّ عتيق */
+  --bg: #f7f3ea;
+  --bg-elevated: #fdfbf6;
+  --bg-soft: #efe8d8;
+  --bg-deep: #e8dfc9;
+
+  /* النصوص */
   --text: #1a1a1a;
-  --text-soft: #4a4a4a;
-  --text-muted: #7a7a7a;
-  --border: #e0dcd2;
-  --border-strong: #c8c2b4;
+  --text-soft: #3d3a34;
+  --text-muted: #6b665a;
+  --text-faint: #9a9384;
+
+  /* الحدود */
+  --border: #d9cfb8;
+  --border-strong: #b8a888;
+  --border-gold: #8b6914;
 
   /* الحالات */
-  --success: #0e7c4a;
-  --warning: #c9a227;
-  --danger: #b91c1c;
-  --info: #1e40af;
+  --success: #1f4636;
+  --warning: #8b6914;
+  --danger: #7a1f2b;
+  --info: #1e3a5f;
 
-  /* الظلال */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 12px 32px rgba(0,0,0,0.12);
+  /* ظلال خفيفة جدًا */
+  --shadow-sm: 0 1px 2px rgba(31, 70, 54, 0.06);
+  --shadow-md: 0 2px 6px rgba(31, 70, 54, 0.08);
+  --shadow-lg: 0 6px 20px rgba(31, 70, 54, 0.10);
 
-  /* الانحناءات */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-full: 999px;
+  /* حواف شبه حادة */
+  --radius-xs: 0;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
 
   /* الخطوط */
-  --font-body: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+  --font-body: 'Noto Naskh Arabic', 'Amiri', serif;
   --font-heading: 'Amiri', 'Scheherazade New', serif;
+  --font-quran: 'Scheherazade New', 'Amiri', serif;
 
-  /* القياسات */
-  --container: 1200px;
-  --header-height: 70px;
+  /* قياسات */
+  --container: 1180px;
+  --header-height: 68px;
+  --line-height: 1.85;
 
-  /* الانتقالات */
-  --t-fast: 0.15s ease;
-  --t-base: 0.25s ease;
-  --t-slow: 0.4s ease;
+  /* انتقالات هادئة */
+  --t-fast: 0.12s ease;
+  --t-base: 0.22s ease;
 }
 
 /* ---------- 3. الوضع الليلي ---------- */
 [data-theme="dark"] {
-  --bg: #0d1117;
-  --bg-elevated: #161b22;
-  --bg-soft: #1c2128;
-  --text: #e6edf3;
-  --text-soft: #b8c0c8;
-  --text-muted: #7d8590;
-  --border: #30363d;
-  --border-strong: #484f58;
+  --bg: #101410;
+  --bg-elevated: #171b16;
+  --bg-soft: #1e231d;
+  --bg-deep: #0a0d0a;
 
-  --color-primary: #2ea043;
-  --color-primary-dark: #238636;
-  --color-primary-light: #3fb950;
-  --color-gold: #d4a72c;
-  --color-gold-light: #e3b341;
+  --text: #e8e3d8;
+  --text-soft: #c8c2b3;
+  --text-muted: #8a8578;
+  --text-faint: #5a564d;
+
+  --border: #2a2e26;
+  --border-strong: #3d4235;
+  --border-gold: #a8891e;
+
+  --color-primary: #4a8a68;
+  --color-primary-dark: #3a6b52;
+  --color-primary-light: #5fa87f;
+  --color-gold: #b8931f;
+  --color-gold-dark: #8b6914;
+  --color-maroon: #8a2f3d;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 6px 20px rgba(0, 0, 0, 0.55);
 }
 
 /* ---------- 4. إعادة التعيين ---------- */
@@ -83,36 +102,28 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
 }
 
 body {
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
-  line-height: 1.75;
-  font-size: 16px;
+  line-height: var(--line-height);
+  font-size: 16.5px;
   min-height: 100vh;
   transition: background var(--t-base), color var(--t-base);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-img, video {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
+img, video { max-width: 100%; height: auto; display: block; }
 
 a {
   color: var(--color-primary);
   text-decoration: none;
   transition: color var(--t-fast);
 }
-
-a:hover {
-  color: var(--color-primary-light);
-}
+a:hover { color: var(--color-gold-dark); }
 
 button {
   font-family: inherit;
@@ -128,26 +139,30 @@ input, textarea, select {
   color: inherit;
 }
 
-ul, ol {
-  list-style: none;
+ul, ol { list-style: none; }
+
+::selection {
+  background: var(--color-gold);
+  color: var(--bg-elevated);
 }
 
 /* ---------- 5. العناوين ---------- */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
   color: var(--text);
-  margin-bottom: 0.6em;
+  margin-bottom: 0.7em;
+  letter-spacing: 0;
 }
 
-h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); }
-h2 { font-size: clamp(1.5rem, 4vw, 2rem); }
-h3 { font-size: clamp(1.25rem, 3vw, 1.5rem); }
-h4 { font-size: 1.15rem; }
+h1 { font-size: clamp(1.75rem, 4.5vw, 2.4rem); }
+h2 { font-size: clamp(1.4rem, 3.5vw, 1.85rem); }
+h3 { font-size: clamp(1.2rem, 2.6vw, 1.4rem); }
+h4 { font-size: 1.1rem; }
 
 p {
-  margin-bottom: 1em;
+  margin-bottom: 1.1em;
   color: var(--text-soft);
 }
 
@@ -155,13 +170,13 @@ p {
 .container {
   max-width: var(--container);
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1.25rem;
 }
 
 .container-narrow {
   max-width: 760px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1.25rem;
 }
 
 /* ---------- 7. الأزرار ---------- */
@@ -170,26 +185,26 @@ p {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.7rem 1.4rem;
-  border-radius: var(--radius-md);
+  padding: 0.65rem 1.35rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 0.95rem;
   transition: all var(--t-base);
   white-space: nowrap;
   cursor: pointer;
   border: 1px solid transparent;
+  letter-spacing: 0.2px;
 }
 
 .btn-primary {
   background: var(--color-primary);
-  color: #fff;
+  color: #f7f3ea;
+  border-color: var(--color-primary-dark);
 }
-
 .btn-primary:hover {
   background: var(--color-primary-dark);
-  color: #fff;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  color: #f7f3ea;
 }
 
 .btn-outline {
@@ -197,29 +212,36 @@ p {
   border: 1px solid var(--border-strong);
   color: var(--text);
 }
-
 .btn-outline:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
 .btn-gold {
-  background: var(--color-gold);
-  color: #1a1a1a;
+  background: var(--color-gold-dark);
+  color: #f7f3ea;
+  border-color: var(--color-gold);
 }
-
 .btn-gold:hover {
-  background: var(--color-gold-light);
-  color: #1a1a1a;
+  background: var(--color-gold);
+  color: #f7f3ea;
 }
 
-.btn-sm { padding: 0.45rem 0.9rem; font-size: 0.85rem; }
-.btn-lg { padding: 0.9rem 1.8rem; font-size: 1.05rem; }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-soft);
+}
+.btn-ghost:hover {
+  color: var(--color-primary);
+  background: var(--bg-soft);
+}
+
+.btn-sm { padding: 0.4rem 0.9rem; font-size: 0.85rem; }
+.btn-lg { padding: 0.85rem 1.75rem; font-size: 1.05rem; }
 
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 
 /* ---------- 8. الكروت ---------- */
@@ -227,41 +249,39 @@ p {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 1.25rem;
-  transition: all var(--t-base);
+  padding: 1.4rem;
+  transition: border-color var(--t-base), box-shadow var(--t-base);
 }
-
 .card:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  border-color: var(--border-gold);
+  box-shadow: var(--shadow-sm);
 }
 
 /* ---------- 9. الشارات ---------- */
 .badge {
   display: inline-block;
-  padding: 0.25rem 0.7rem;
-  border-radius: var(--radius-full);
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 600;
   background: var(--bg-soft);
-  color: var(--text-soft);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  letter-spacing: 0.3px;
 }
-
 .badge-primary {
-  background: rgba(14, 124, 74, 0.12);
+  background: transparent;
   color: var(--color-primary);
+  border-color: var(--color-primary);
 }
-
 .badge-gold {
-  background: rgba(201, 162, 39, 0.15);
-  color: var(--color-gold);
+  background: transparent;
+  color: var(--color-gold-dark);
+  border-color: var(--color-gold);
 }
 
 /* ---------- 10. النماذج ---------- */
-.form-group {
-  margin-bottom: 1rem;
-}
+.form-group { margin-bottom: 1.1rem; }
 
 .form-label {
   display: block;
@@ -275,35 +295,28 @@ p {
 .form-textarea,
 .form-select {
   width: 100%;
-  padding: 0.7rem 1rem;
+  padding: 0.7rem 0.9rem;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   background: var(--bg-elevated);
-  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+  transition: border-color var(--t-fast);
 }
-
 .form-input:focus,
 .form-textarea:focus,
 .form-select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(14, 124, 74, 0.15);
 }
-
 .form-textarea {
-  min-height: 120px;
+  min-height: 130px;
   resize: vertical;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
 /* ---------- 11. التخطيطات ---------- */
-.grid {
-  display: grid;
-  gap: 1.25rem;
-}
-
-.grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-.grid-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.grid { display: grid; gap: 1.4rem; }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
 .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 
 .flex { display: flex; }
@@ -314,45 +327,41 @@ p {
 .gap-2 { gap: 1rem; }
 .gap-3 { gap: 1.5rem; }
 
-/* ---------- 12. الفواصل ---------- */
+/* ---------- 12. الفواصل والزخارف ---------- */
 .divider {
   height: 1px;
   background: var(--border);
-  margin: 1.5rem 0;
+  margin: 1.75rem 0;
   border: none;
 }
 
+/* زخرفة مخطوطة إسلامية — خط ذهبي رفيع مع نجمة */
 .divider-ornament {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  margin: 2rem 0;
+  gap: 0.9rem;
+  margin: 2.25rem 0;
   color: var(--color-gold);
 }
-
 .divider-ornament::before,
 .divider-ornament::after {
   content: '';
   flex: 1;
   height: 1px;
-  background: linear-gradient(to var(--dir, right), transparent, var(--color-gold));
+  background: linear-gradient(to var(--dir, right), transparent, var(--border-gold));
 }
-
-.divider-ornament::after {
-  --dir: left;
+.divider-ornament::after { --dir: left; }
+.divider-ornament span {
+  font-size: 0.9rem;
+  letter-spacing: 4px;
 }
 
 /* ---------- 13. المسافات ---------- */
-.mt-1 { margin-top: 0.5rem; }
-.mt-2 { margin-top: 1rem; }
-.mt-3 { margin-top: 1.5rem; }
-.mt-4 { margin-top: 2rem; }
-.mb-1 { margin-bottom: 0.5rem; }
-.mb-2 { margin-bottom: 1rem; }
-.mb-3 { margin-bottom: 1.5rem; }
-.mb-4 { margin-bottom: 2rem; }
-
+.mt-1 { margin-top: 0.5rem; } .mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; } .mt-4 { margin-top: 2rem; }
+.mb-1 { margin-bottom: 0.5rem; } .mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; } .mb-4 { margin-bottom: 2rem; }
 .py-1 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
 .py-2 { padding-top: 1rem; padding-bottom: 1rem; }
 .py-3 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
@@ -365,96 +374,108 @@ p {
 .text-muted { color: var(--text-muted); }
 .text-soft { color: var(--text-soft); }
 .text-primary { color: var(--color-primary); }
-.text-gold { color: var(--color-gold); }
+.text-gold { color: var(--color-gold-dark); }
 .text-sm { font-size: 0.85rem; }
 .text-lg { font-size: 1.15rem; }
 .font-bold { font-weight: 700; }
 
 /* ---------- 15. الزخارف الإسلامية ---------- */
+/* شريط علوي رصين — خط ذهبي رفيع بدل المتدرج الملون */
 .ornament-top {
-  height: 4px;
+  height: 3px;
   background: linear-gradient(
     to left,
-    var(--color-primary),
-    var(--color-gold),
-    var(--color-primary)
+    var(--color-primary-dark),
+    var(--color-gold-dark),
+    var(--color-primary-dark)
   );
 }
 
-.bismillah {
+/* نص قرآني/حديثي — بخط النسخ التقليدي */
+.quran-text {
+  font-family: var(--font-quran);
+  font-size: 1.5rem;
+  line-height: 2.1;
+  color: var(--text);
   text-align: center;
-  font-family: var(--font-heading);
-  font-size: 1.6rem;
-  color: var(--color-gold);
-  margin: 1.5rem 0;
-  padding: 1rem;
+  padding: 1.5rem 1rem;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+  margin: 2rem 0;
 }
 
-/* ---------- 16. الحركات ---------- */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+.hadith-text {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  line-height: 2;
+  color: var(--text);
+  padding: 1.25rem 1.5rem;
+  background: var(--bg-soft);
+  border-inline-start: 3px solid var(--color-gold);
+  margin: 1.5rem 0;
+  border-radius: var(--radius-sm);
 }
 
-.fade-in {
-  animation: fadeIn var(--t-slow) ease forwards;
+/* فاصل ذهبي بسيط بين الأقسام */
+.section-title {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 1.4rem;
+  background: var(--color-gold);
+  border-radius: 0;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border);
-  border-top-color: var(--color-primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-/* ---------- 17. الوصولية ---------- */
+/* ---------- 16. الوصولية ---------- */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-gold);
   outline-offset: 2px;
 }
 
 .sr-only {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
 }
 
-/* ---------- 18. التجاوب ---------- */
+/* ---------- 17. التجاوب ---------- */
 @media (max-width: 768px) {
-  body { font-size: 15px; }
-  .container { padding: 0 0.9rem; }
-  .card { padding: 1rem; }
-  .btn { padding: 0.6rem 1.1rem; font-size: 0.9rem; }
-  .divider-ornament { margin: 1.5rem 0; }
+  body { font-size: 15.5px; }
+  .container { padding: 0 1rem; }
+  .card { padding: 1.15rem; }
+  .btn { padding: 0.55rem 1.1rem; font-size: 0.9rem; }
+  .section-title { font-size: 1.35rem; }
+  .quran-text { font-size: 1.3rem; padding: 1.2rem 0.75rem; }
 }
 
 @media (max-width: 480px) {
-  body { font-size: 14.5px; }
-  h1 { font-size: 1.6rem; }
-  h2 { font-size: 1.35rem; }
+  body { font-size: 15px; }
+  h1 { font-size: 1.55rem; }
+  h2 { font-size: 1.3rem; }
 }
 
-/* ---------- 19. الطباعة ---------- */
+/* ---------- 18. الطباعة ---------- */
 @media print {
   .no-print { display: none !important; }
   body { background: #fff; color: #000; }
   a { color: #000; text-decoration: underline; }
+  .card { box-shadow: none; border-color: #999; }
 }
 
 /* ============================================================
-   نهاية التصميم الأساسي
+   نهاية التصميم الأساسي — نسخة جديّة كلاسيكية
    ============================================================ */
