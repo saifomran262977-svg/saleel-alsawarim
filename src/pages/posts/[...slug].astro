@@ -1,0 +1,727 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import LikeButton from '@/components/LikeButton.astro';
+import Comments from '@/components/Comments.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+
+const { post } = Astro.props;
+const { data } = post;
+
+const categoryLabels: Record<string, string> = {
+  durus: 'دروس',
+  maqalat: 'مقالات',
+  fatawa: 'فتاوى',
+  athar: 'أثر ودليل',
+  tazkiya: 'تزكية',
+  manhaj: 'منهج',
+  misc: 'متفرقات',
+};
+
+const categoryLabel = categoryLabels[data.category] || data.category;
+
+const pubDate = new Date(data.pubDate);
+const dateFormatted = new Intl.DateTimeFormat('ar-EG', {
+  year: 'numeric', month: 'long', day: 'numeric',
+}).format(pubDate);
+
+const updatedFormatted = data.updatedDate
+  ? new Intl.DateTimeFormat('ar-EG', {
+      year: 'numeric', month: 'long', day: 'numeric',
+    }).format(new Date(data.updatedDate))
+  : null;
+
+const readingTime =
+  data.readingTime ||
+  Math.max(1, Math.ceil((data.description?.length || 0) / 200));
+
+const allPosts = await getCollection('posts', ({ data: d }) => !d.draft);
+const sorted = allPosts.sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+const currentIndex = sorted.findIndex((p) => p.slug === post.slug);
+const prevPost = currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
+const nextPost = currentIndex > 0 ? sorted[currentIndex - 1] : null;
+
+let seriesInfo = null;
+let seriesPosts: CollectionEntry<'posts'>[] = [];
+if (data.series?.slug) {
+  const seriesCollection = await getCollection('series');
+  const found = seriesCollection.find((s) => s.slug === data.series!.slug);
+  if (found) {
+    seriesInfo = found;
+    seriesPosts = sorted
+      .filter((p) => p.data.series?.slug === data.series!.slug)
+      .sort((a, b) => (a.data.series?.order || 0) - (b.data.series?.order || 0));
+  }
+}
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || '';
+const postUrl = `${siteUrl}/posts/${post.slug}/`;
+const shareTitle = encodeURIComponent(data.title);
+const shareUrl = encodeURIComponent(postUrl);
+---
+
+<BaseLayout
+  title={data.title}
+  description={data.description}
+  image={data.image?.src.src}
+  lang={data.lang}
+>
+  <article class="post-article" itemscope itemtype="https://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <div class="container-narrow">
+        <div class="post-badges">
+          <a href={`/category/${data.category}/`} class="post-category">{categoryLabel}</a>
+          {seriesInfo && (
+            <a href={`/series/${seriesInfo.slug}/`} class="post-series">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              {seriesInfo.data.title}
+            </a>
+          )}
+        </div>
+
+        <h1 class="post-title" itemprop="headline">{data.title}</h1>
+        <p class="post-description" itemprop="description">{data.description}</p>
+
+        <div class="post-meta">
+          <span class="meta-item" itemprop="author" itemscope itemtype="https://schema.org/Person">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span itemprop="name">{data.author}</span>
+          </span>
+          <time class="meta-item" datetime={pubDate.toISOString()} itemprop="datePublished">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            {dateFormatted}
+          </time>
+          <span class="meta-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            {readingTime} دقيقة قراءة
+          </span>
+        </div>
+
+        {updatedFormatted && (
+          <p class="post-updated">
+            آخر تحديث: <time datetime={new Date(data.updatedDate!).toISOString()}>{updatedFormatted}</time>
+          </p>
+        )}
+      </div>
+    </header>
+
+    {data.image && (
+      <figure class="post-hero-image">
+        <div class="container-narrow">
+          <Image
+            src={data.image.src}
+            alt={data.image.alt}
+            width={1200}
+            height={675}
+            loading="eager"
+            decoding="async"
+            itemprop="image"
+          />
+        </div>
+      </figure>
+    )}
+
+    <div class="post-content-wrapper">
+      <div class="container-narrow">
+        <div class="post-content" itemprop="articleBody">
+          <slot />
+        </div>
+
+        {data.references && data.references.length > 0 && (
+          <aside class="post-references">
+            <h3 class="references-title">المراجع</h3>
+            <ul class="references-list">
+              {data.references.map((ref) => (
+                <li class="reference-item">
+                  <span class={`reference-type type-${ref.type}`}>
+                    {ref.type === 'quran' && 'قرآن'}
+                    {ref.type === 'hadith' && 'حديث'}
+                    {ref.type === 'book' && 'كتاب'}
+                    {ref.type === 'scholar' && 'عالم'}
+                  </span>
+                  <span class="reference-text">{ref.text}</span>
+                  {ref.source && <span class="reference-source">— {ref.source}</span>}
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
+
+        {data.tags && data.tags.length > 0 && (
+          <div class="post-tags">
+            <span class="tags-label">الوسوم:</span>
+            {data.tags.map((tag) => (
+              <a href={`/search?q=${encodeURIComponent(tag)}`} class="tag-chip">#{tag}</a>
+            ))}
+          </div>
+        )}
+
+        <div class="post-actions">
+          <LikeButton postSlug={post.slug} />
+          <div class="share-buttons">
+            <span class="share-label">شارك:</span>
+            <a href={`https://twitter.com/intent/tweet?text=${shareTitle}&url=${shareUrl}`} target="_blank" rel="noopener noreferrer" class="share-btn" aria-label="تويتر" title="تويتر">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+            </a>
+            <a href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`} target="_blank" rel="noopener noreferrer" class="share-btn" aria-label="فيسبوك" title="فيسبوك">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9.198 21.5h4v-8.01h3.604l.396-3.98h-4V7.5a1 1 0 0 1 1-1h3v-4h-3a5 5 0 0 0-5 5v2.01h-2l-.396 3.98h2.396v8.01z"/>
+              </svg>
+            </a>
+            <a href={`https://t.me/share/url?url=${shareUrl}&text=${shareTitle}`} target="_blank" rel="noopener noreferrer" class="share-btn" aria-label="تيليجرام" title="تيليجرام">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
+              </svg>
+            </a>
+            <button type="button" class="share-btn copy-btn" id="copy-link" data-url={postUrl} aria-label="نسخ الرابط" title="نسخ الرابط">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {seriesInfo && seriesPosts.length > 0 && (
+      <section class="series-box">
+        <div class="container-narrow">
+          <div class="series-box-inner">
+            <div class="series-box-header">
+              <h3 class="series-box-title">من سلسلة: {seriesInfo.data.title}</h3>
+              <a href={`/series/${seriesInfo.slug}/`} class="series-box-link">عرض السلسلة كاملة ←</a>
+            </div>
+            <ol class="series-posts-list">
+              {seriesPosts.map((p, i) => (
+                <li class={`series-post-item ${p.slug === post.slug ? 'current' : ''}`}>
+                  <span class="series-post-number">{i + 1}</span>
+                  {p.slug === post.slug ? (
+                    <span class="series-post-current">{p.data.title}</span>
+                  ) : (
+                    <a href={`/posts/${p.slug}/`}>{p.data.title}</a>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </section>
+    )}
+
+    {(prevPost || nextPost) && (
+      <nav class="post-navigation" aria-label="التنقل بين المنشورات">
+        <div class="container-narrow">
+          <div class="post-nav-grid">
+            {prevPost ? (
+              <a href={`/posts/${prevPost.slug}/`} class="post-nav-item post-nav-prev">
+                <span class="post-nav-label">→ السابق</span>
+                <span class="post-nav-title">{prevPost.data.title}</span>
+              </a>
+            ) : <span></span>}
+            {nextPost ? (
+              <a href={`/posts/${nextPost.slug}/`} class="post-nav-item post-nav-next">
+                <span class="post-nav-label">التالي ←</span>
+                <span class="post-nav-title">{nextPost.data.title}</span>
+              </a>
+            ) : <span></span>}
+          </div>
+        </div>
+      </nav>
+    )}
+
+    <div class="container-narrow">
+      <Comments postSlug={post.slug} />
+    </div>
+
+  </article>
+
+  <script>
+    const copyBtn = document.getElementById('copy-link');
+    copyBtn?.addEventListener('click', async () => {
+      const url = copyBtn.dataset.url || window.location.href;
+      try {
+        await navigator.clipboard.writeText(url);
+        const original = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<span style="font-size:0.75rem;color:var(--color-primary);">✓</span>';
+        setTimeout(() => { copyBtn.innerHTML = original; }, 1500);
+      } catch {}
+    });
+  </script>
+</BaseLayout>
+
+<style>
+  .post-article { padding-bottom: 2rem; }
+
+  .post-header {
+    padding: 2.5rem 0 1.5rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+
+  .post-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+
+  .post-category {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.78rem; font-weight: 600;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    transition: all var(--t-fast);
+  }
+  .post-category:hover {
+    background: var(--color-primary);
+    color: var(--bg-elevated);
+  }
+
+  .post-series {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.78rem; font-weight: 600;
+    color: var(--color-gold-dark);
+    background: rgba(139, 105, 20, 0.08);
+    border: 1px solid rgba(139, 105, 20, 0.3);
+    border-radius: var(--radius-sm);
+  }
+
+  .post-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 4.5vw, 2.6rem);
+    line-height: 1.35;
+    color: var(--text);
+    margin-bottom: 1rem;
+    letter-spacing: 0.3px;
+  }
+
+  .post-description {
+    font-size: 1.08rem;
+    line-height: 1.85;
+    color: var(--text-soft);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .post-meta {
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .meta-item { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .meta-item svg { opacity: 0.8; }
+
+  .post-updated {
+    font-size: 0.8rem;
+    color: var(--text-faint);
+    margin-top: 0.75rem;
+    font-style: italic;
+  }
+
+  .post-hero-image { margin: 0 0 2.5rem; padding: 0; }
+  .post-hero-image :global(img) {
+    width: 100%; height: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+  }
+  .post-hero-image figcaption {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 0.6rem;
+    font-style: italic;
+  }
+
+  .post-content-wrapper { margin-bottom: 3rem; }
+
+  .post-content {
+    font-size: 1.05rem;
+    line-height: 2;
+    color: var(--text-soft);
+  }
+
+  .post-content :global(h1),
+  .post-content :global(h2),
+  .post-content :global(h3),
+  .post-content :global(h4) {
+    font-family: var(--font-heading);
+    color: var(--text);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .post-content :global(h2) { font-size: 1.6rem; border-bottom-color: var(--color-gold-dark); }
+  .post-content :global(h3) { font-size: 1.3rem; }
+  .post-content :global(h4) { font-size: 1.12rem; }
+
+  .post-content :global(p) { margin-bottom: 1.2em; line-height: 2; }
+
+  .post-content :global(ul),
+  .post-content :global(ol) { margin: 1rem 0 1.5rem; padding-inline-start: 1.75rem; }
+  .post-content :global(ul) { list-style: disc; }
+  .post-content :global(ol) { list-style: decimal; }
+  .post-content :global(li) { margin-bottom: 0.6rem; line-height: 1.9; }
+
+  .post-content :global(blockquote) {
+    border-inline-start: 3px solid var(--color-gold-dark);
+    padding: 0.75rem 1.25rem;
+    margin: 1.5rem 0;
+    background: var(--bg-soft);
+    font-family: var(--font-heading);
+    font-size: 1.08rem;
+    color: var(--text);
+    border-radius: var(--radius-sm);
+  }
+
+  .post-content :global(code) {
+    background: var(--bg-soft);
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-sm);
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: var(--color-maroon);
+    direction: ltr;
+    display: inline-block;
+  }
+
+  .post-content :global(pre) {
+    background: #1a1f1c;
+    color: #e8e3d8;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    direction: ltr;
+    text-align: left;
+    border: 1px solid var(--border);
+  }
+  .post-content :global(pre code) {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+
+  .post-content :global(a) {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 3px;
+  }
+  .post-content :global(a:hover) {
+    text-decoration-color: var(--color-gold-dark);
+    color: var(--color-gold-dark);
+  }
+
+  .post-content :global(img) {
+    border-radius: var(--radius-md);
+    margin: 1.5rem auto;
+    border: 1px solid var(--border);
+  }
+
+  .post-content :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+  }
+  .post-content :global(th),
+  .post-content :global(td) {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border);
+    text-align: start;
+  }
+  .post-content :global(th) {
+    background: var(--bg-soft);
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .post-content :global(hr) {
+    border: none; height: 1px;
+    background: var(--border);
+    margin: 2rem 0;
+  }
+
+  .post-references {
+    margin: 2.5rem 0;
+    padding: 1.5rem;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-inline-start: 3px solid var(--color-gold-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .references-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+
+  .references-list { display: flex; flex-direction: column; gap: 0.85rem; }
+
+  .reference-item {
+    display: flex; gap: 0.6rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.85;
+    flex-wrap: wrap;
+  }
+
+  .reference-type {
+    flex-shrink: 0;
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.3px;
+  }
+  .type-quran {
+    background: rgba(31, 70, 54, 0.12);
+    color: var(--color-primary);
+    border: 1px solid rgba(31, 70, 54, 0.3);
+  }
+  .type-hadith {
+    background: rgba(139, 105, 20, 0.12);
+    color: var(--color-gold-dark);
+    border: 1px solid rgba(139, 105, 20, 0.3);
+  }
+  .type-book, .type-scholar {
+    background: rgba(92, 30, 43, 0.1);
+    color: var(--color-maroon);
+    border: 1px solid rgba(92, 30, 43, 0.25);
+  }
+
+  .reference-text { flex: 1; color: var(--text); min-width: 0; }
+  .reference-source { color: var(--text-muted); font-size: 0.85rem; }
+
+  .post-tags {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    align-items: center;
+    margin: 2rem 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .tags-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-inline-end: 0.3rem;
+  }
+
+  .tag-chip {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    padding: 0.3rem 0.75rem;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all var(--t-fast);
+  }
+  .tag-chip:hover {
+    background: var(--color-primary);
+    color: var(--bg-elevated);
+    border-color: var(--color-primary);
+  }
+
+  .post-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.25rem 0;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .share-buttons { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+
+  .share-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-inline-end: 0.3rem;
+  }
+
+  .share-btn {
+    width: 36px; height: 36px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-soft);
+    background: var(--bg-elevated);
+    transition: all var(--t-fast);
+    cursor: pointer;
+  }
+  .share-btn:hover {
+    border-color: var(--color-gold-dark);
+    color: var(--color-gold-dark);
+    background: var(--bg-soft);
+  }
+
+  .series-box { margin: 2.5rem 0; padding: 1.5rem 0; }
+
+  .series-box-inner {
+    padding: 1.5rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-inline-start: 4px solid var(--color-gold-dark);
+    border-radius: var(--radius-md);
+  }
+
+  .series-box-header {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 1rem; flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);  }
+
+  .series-box-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .series-box-link {
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  .series-posts-list {
+    display: flex; flex-direction: column; gap: 0.4rem;
+    list-style: none; padding: 0; margin: 0;
+  }
+
+  .series-post-item {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.92rem;
+    transition: background var(--t-fast);
+  }
+  .series-post-item:hover { background: var(--bg-soft); }
+
+  .series-post-item.current {
+    background: var(--bg-soft);
+    border-inline-start: 2px solid var(--color-gold-dark);
+  }
+
+  .series-post-number {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .series-post-current { color: var(--text); font-weight: 600; }
+
+  .series-post-item a { color: var(--text-soft); }
+  .series-post-item a:hover { color: var(--color-primary); }
+
+  .post-navigation {
+    margin: 3rem 0 1rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .post-nav-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .post-nav-item {
+    display: flex; flex-direction: column; gap: 0.35rem;
+    padding: 1rem 1.15rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all var(--t-base);
+    color: inherit;
+    min-width: 0;
+  }
+  .post-nav-item:hover {
+    border-color: var(--color-primary);
+    color: inherit;
+  }
+
+  .post-nav-next { text-align: end; }
+
+  .post-nav-label {
+    font-size: 0.78rem;
+    color: var(--color-gold-dark);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .post-nav-title {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: var(--text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 640px) {
+    .post-header { padding: 1.75rem 0 1.25rem; }
+    .post-title { font-size: 1.6rem; }
+    .post-description { font-size: 0.98rem; }
+    .post-meta { gap: 0.75rem; font-size: 0.8rem; }
+    .post-content { font-size: 1rem; line-height: 1.95; }
+    .post-content :global(h2) { font-size: 1.35rem; }
+    .post-content :global(h3) { font-size: 1.15rem; }
+    .post-actions { flex-direction: column; align-items: stretch; }
+    .share-buttons { justify-content: center; }
+    .post-nav-grid { grid-template-columns: 1fr; }
+    .post-nav-next { text-align: start; }
+    .series-box-inner { padding: 1.15rem; }
+  }
+</style>
