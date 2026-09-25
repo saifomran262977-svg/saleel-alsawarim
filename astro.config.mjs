@@ -34,13 +34,4 @@ export default defineConfig({
     smartypants: true,
     gfm: true,
   },
-
-  vite: {
-    build: {
-      cssMinify: 'lightningcss',
-    },
-    ssr: {
-      noExternal: ['reading-time'],
-    },
-  },
 });
