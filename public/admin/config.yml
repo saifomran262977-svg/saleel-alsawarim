@@ -1,0 +1,111 @@
+# ============================================================
+# صليل الصوارم — إعدادات Sveltia CMS
+# ============================================================
+
+backend:
+  name: github
+  repo: saifomran262977-svg/saleel-alsawarim
+  branch: main
+  # سيُضاف رابط الـ OAuth هنا لاحقًا
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+locale: ar
+
+collections:
+  # ------------------------------------------------------------
+  # المنشورات
+  # ------------------------------------------------------------
+  - name: posts
+    label: المنشورات
+    label_singular: منشور
+    folder: src/content/posts
+    create: true
+    delete: true
+    slug: "{{fields.slug}}"
+    preview_path: "posts/{{slug}}"
+    sortable_fields: ["pubDate", "title"]
+    summary: "{{title}} — {{pubDate}}"
+
+    fields:
+      - { label: "الرابط (slug)", name: "slug", widget: "string", hint: "أحرف إنجليزية صغيرة وأرقام وشرطات فقط" }
+
+      - { label: "العنوان", name: "title", widget: "string" }
+
+      - { label: "الوصف", name: "description", widget: "text", hint: "فقرة قصيرة تظهر في الكروت والبحث (10-300 حرف)" }
+
+      - { label: "تاريخ النشر", name: "pubDate", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false }
+
+      - label: "التصنيف"
+        name: "category"
+        widget: "select"
+        options:
+          - { label: "دروس", value: "durus" }
+          - { label: "مقالات", value: "maqalat" }
+          - { label: "فتاوى", value: "fatawa" }
+          - { label: "أثر ودليل", value: "athar" }
+          - { label: "تزكية", value: "tazkiya" }
+          - { label: "منهج", value: "manhaj" }
+          - { label: "متفرقات", value: "misc" }
+
+      - label: "السلسلة (اختياري)"
+        name: "series"
+        widget: "object"
+        required: false
+        fields:
+          - { label: "معرّف السلسلة", name: "slug", widget: "string", required: false }
+          - { label: "الترتيب", name: "order", widget: "number", required: false, value_type: "int" }
+
+      - { label: "الوسوم", name: "tags", widget: "list", required: false, default: [] }
+
+      - { label: "المؤلف", name: "author", widget: "string", default: "مسلم موحّد" }
+
+      - { label: "مسودة؟", name: "draft", widget: "boolean", default: false }
+
+      - { label: "منشور مميز؟", name: "featured", widget: "boolean", default: false }
+
+      - label: "اللغة"
+        name: "lang"
+        widget: "select"
+        default: "ar"
+        options:
+          - { label: "العربية", value: "ar" }
+          - { label: "English", value: "en" }
+
+      - { label: "نص المنشور", name: "body", widget: "markdown" }
+
+  # ------------------------------------------------------------
+  # السلاسل
+  # ------------------------------------------------------------
+  - name: series
+    label: السلاسل
+    label_singular: سلسلة
+    folder: src/content/series
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "العنوان", name: "title", widget: "string" }
+      - { label: "الوصف", name: "description", widget: "text" }
+      - label: "التصنيف"
+        name: "category"
+        widget: "select"
+        options:
+          - { label: "دروس", value: "durus" }
+          - { label: "مقالات", value: "maqalat" }
+          - { label: "فتاوى", value: "fatawa" }
+          - { label: "أثر ودليل", value: "athar" }
+          - { label: "تزكية", value: "tazkiya" }
+          - { label: "منهج", value: "manhaj" }
+      - { label: "تاريخ البداية", name: "startDate", widget: "datetime", required: false, date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "مكتملة؟", name: "complete", widget: "boolean", default: false }
+      - { label: "الترتيب", name: "order", widget: "number", default: 0, value_type: "int" }
+      - label: "اللغة"
+        name: "lang"
+        widget: "select"
+        default: "ar"
+        options:
+          - { label: "العربية", value: "ar" }
+          - { label: "English", value: "en" }
+      - { label: "نص السلسلة", name: "body", widget: "markdown", required: false }
